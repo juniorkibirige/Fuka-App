@@ -5,9 +5,30 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: cadetblue;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+.nav {
+  text-align: center;
+  font-size: 40px;
+  padding: 5px;
+  color: maroon;
+  background-color: bisque;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+  fantasy;
+}
+
+.container {
+  padding: 10px;
+}
+.fieldset2 {
+  text-align: center;
+}
+.fieldset1 {
+  text-align: center;
 }
