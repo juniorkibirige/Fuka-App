@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+
 
 function Header(props) {
     return (
@@ -8,26 +9,192 @@ function Header(props) {
     );
 }
 
-class Body extends React.Component {
+class Body extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            m_num: '',
+            amount: '',
+            error_msg: '',
+            fieldset1: false,
+            fieldset2: true,
+            fieldset3: true,
+            deviceId: '',
+            units: '',
+            p_unt: 3516,
+            token: 'Is being generated ...',
+            btn_checkout: true, 
+        };
+
+        this.updateInput = this.updateInput.bind(this)
+        this.clickHandler = this.clickHandler.bind(this)
+    }
+
+    getRandomIntInclusive = (min, max) => {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
+    }
+
+    updateInput = ({ target }) => {
+        const input = target.value
+        if (!isNaN(+input)) {
+            this.setState({ [target.name]: input })
+            this.setState({ error_msg: '' })
+        } else {
+            this.setState({ [target.name]: input })
+            if (target.name === "m_num")
+                this.setState({ error_msg: 'Invalid Meter Number' })
+            else if (target.name === "amount")
+                this.setState({ error_msg: 'Invalid amount ' })
+        }
+        if (target.name === "amount") {
+            let unt = Math.round10(input / this.state.p_unt, -2)
+            this.setState({ units: unt })
+        }
+    }
+
+    clickHandler = () => {
+        if (this.validate()) {
+            this.setState({ fieldset1: !this.state.fieldset1 })
+            this.setState({ fieldset2: !this.state.fieldset2 })
+        } else {
+            this.setState({ error_msg: 'Unknown meter number' })
+        }
+    }
+
+    submitHandler = () => {
+        const info = "Meter number: " + this.state.m_num +
+            "\nAmount Paid: " + this.state.amount +
+            "\nUnits: " + this.state.units +
+            "\nToken: " + this.state.token
+        alert(info)
+        this.setState({ fieldset2: !this.state.fieldset2 })
+        this.setState({ fieldset3: !this.state.fieldset3 })
+    }
+
+    genToken = () => {
+        if(this.state.amount === ""){
+            this.setState({ error_msg: 'Amount field is empty!' })
+            return
+        }
+        let token_unencrypted = ''
+        let token = ''
+        let nits = ''
+        const unitString = this.state.units * 100
+        const uSLen = String(unitString).length
+        if(uSLen === 1) {
+            nits = nits.concat("0000", unitString)
+        }
+        else if(uSLen === 2 ) {
+            nits = nits.concat("000", unitString)
+        } else if(uSLen === 3) {
+            nits = nits.concat("00", unitString)
+        } else if (uSLen === 4) {
+            nits = nits.concat("0", unitString)
+        }
+        token_unencrypted = token_unencrypted.concat(this.state.deviceId, nits, this.getKey())
+        this.splitValue(token_unencrypted, 4)
+        token = token.concat(this.s5,this.s3,this.s6,this.s4)
+        console.log(token)
+        this.setState({ token: token })
+        this.setState({ btn_checkout: !this.state.btn_checkout })
+        this.submitHandler()
+    }
+    s3 = ''
+    s4 = ''
+    s5 = ''
+    s6 = ''
+    splitValue = (value, index) => {
+        this.s3 = value.substring(0, index)
+        this.s4 = value.substring(index, index+index)
+        this.s5 = value.substring(index+index, index+index+index)
+        this.s6 = value.substring(index+index+index)
+    }
+
+    validate = () => {
+        let meter = this.state.m_num
+        if (meterNum[meter] !== undefined) {
+            this.setState({ deviceId: (meterNum[meter]) })
+            return true
+        }
+        return false
+    }
+    Back = () => {
+        this.setState({ fieldset1: !this.state.fieldset1 })
+        this.setState({ fieldset2: !this.state.fieldset2 })
+        this.setState({ amount: '' })
+        this.setState({ units: '' })
+        this.setState({ token: 'Is being generated ...' })
+        this.setState({ error_msg: '' })
+    }
+    root = () => {
+        this.setState({ fieldset1: false })
+        this.setState({ fieldset2: true })
+        this.setState({ fieldset3: true })
+        this.setState({ amount: '' })
+        this.setState({ units: '' })
+        this.setState({ token: 'Is being generated ...' })
+        this.setState({ error_msg: '' })
+        this.setState({ m_num: '' })
+    }
+    getKey = () => {
+        let key = ''
+        let count = 5
+        while (count !== 0){
+            key = key.concat(crypt[this.getRandomIntInclusive(0, 13)])
+            count -= 1
+        }
+        return key
+    }
     render() {
-        const desc = "Next";
+        const desc = "Next"
+        let btn_value = "Pay & Checkout"
+        let fieldset1 = ["fieldset1"]
+        let fieldset2 = ["fieldset2"]
+        let fieldset3 = ["fieldset3"]
+        if (this.state.fieldset1) {
+            fieldset1.push('inactive')
+        }
+        if (this.state.fieldset2) {
+            fieldset2.push('inactive')
+        }
+        if (this.state.fieldset3) {
+            fieldset3.push('inactive')
+        }
+        if(!this.state.btn_checkout){
+            btn_value = "Get token"
+        }
         return (
             <div className="Content">
-                <form id="fukaForm" method="POST" encType="multipart/form-data">
-                    <fieldset className="fieldset1">
+                <form id="fukaForm" method="POST" action="" encType="multipart/form-data">
+                    <fieldset className={fieldset1.join(' ')}>
                         <h4>Welcome to the Electronic Water Management System.</h4>
                         <p lang="en">Please enter your meter number below:</p>
                         <p lang="ug">Yingiza ennamba ya meter yo mu kabokisi wamanga:</p>
-                        <input type="text" placeholder="Meter Number" name="m_num" id="m_num" required="yes" />
-                        <p><span className="error_msg" id="error_msg"></span></p>
+                        <input m_num="m_num" type="text" placeholder="Meter Number" name="m_num" id="m_num" value={this.state.m_num} onChange={this.updateInput} required="yes" />
+                        <p><span className="error-msg" id="error_msg">{this.state.error_msg}</span></p>
                         <button
                             name="next"
                             type="button"
-                            onClick = {validate}
+                            onClick={this.clickHandler}
                         >{desc}</button>
                     </fieldset>
-                    <fieldset className="fieldset2">
-                        <input type="submit" value="Pay & Checkout" />
+                    <fieldset className={fieldset2.join(' ')}>
+                        <button className="back" onClick={this.Back}>Back</button>
+                        <p><input type="text" className="central" placeholder="Meter Number" readOnly="readonly" value={this.state.m_num} /></p>
+                        <p lang="en">Enter amount of money to pay below:</p>
+                        <p lang="ug">Yingiza omuwendo gwa Ssente zo yagala okusasula mu kabokisi wamanga:</p>
+                        <p><input type="text" name="amount" id="amount" placeholder="Amount to pay" onChange={this.updateInput} value={this.state.amount} required/></p>
+                        <p><span className="error-msg" id="error_msg">{this.state.error_msg}</span></p>
+                        <p>Number of Units:</p>
+                        <p>Omuwendo gwa Uniti zosobola okufuna mu Ssente zzo waggulu:</p>
+                        <p><input type="text" readOnly="readonly" name="Units" placeholder="units" value={this.state.units} /> units @ {this.state.p_unt}/=</p>
+                        <input type="button" value={btn_value} onClick={this.genToken} />
+                    </fieldset>
+                    <fieldset className={fieldset3.join(' ')}>
+                        <div className="message">Your token is {this.state.token}</div><br></br>
+                        <a href="/"><button type="button">Done</button></a>
                     </fieldset>
                 </form>
             </div>
@@ -35,13 +202,7 @@ class Body extends React.Component {
     }
 }
 
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            m_num: null,
-        };
-    }
+class App extends Component {
     render() {
         const name = "The Fuka App";
         return (
@@ -55,192 +216,48 @@ class App extends React.Component {
     }
 }
 
-const validate = () => {
-    alert("The next button has been clicked!")
+
+const meterNum = {
+    21339079: "AD5DBC",
+    15404656479025: "C4DA31",
+    15404656787896: "DAC324",
 }
 
-// const meterNum = {
-//     15404656479846: "AD5DBC"
-// };
+const crypt =  {
+    0: "A", 1: "B", 2: "C", 3: "D",
+    4: 0, 5: 1, 6: 2, 7: 3, 8: 4,
+    9: 5, 10: 6, 11: 7, 12: 8, 13: 9,
+};
 
-/*
-function Controls() {
-    var current_fs, next_fs, previous_fs;
-    var left, opacity, scale;
-    var old_width = 0, new_width;
-    var animating;
-    var ref = null;
-    $('#email').val('');
-    $(".next").click(function () {
-        current_fs = $(this).parent();
-        var fieldsetValue = $("fieldset").index(current_fs);
-        if (fieldsetValue == 0) {
-            $('#password').val('');
-            $('#msg').text('');
-            var email = $('#email').val();
-            checkEmail(email, function (result) {
-                if (result == 1) {
-                    next_fs = current_fs.next();
-                    animate(next_fs);
-                }
-            });
+(function (){
+    /**
+     * Decimal adjustment of a number.
+     *
+     * @param {String}  type  The type of adjustment.
+     * @param {Number}  value The number.
+     * @param {Integer} exp   The exponent (the 10 logarithm of the adjustment base).
+     * @returns {Number} The adjusted value.
+     */
+    function decimalAdjust(type, value, exp) {
+        if (typeof exp === 'undefined' || +exp === 0) {
+            return Math[type](value);
         }
-        if (fieldsetValue == 1) {
-            next_fs = current_fs.next();
-            animate(next_fs);
+        value = +value;
+        exp = +exp;
+        if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+            return NaN;
         }
-    });
+        value = value.toString().split('e');
+        value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+        value = value.toString().split('e');
+        return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+    }
 
-    function animate(next_fs) {
-        if (animating) return false;
-        animating = true;
-        $('.progressbar .bar').animate({
-            height: "5px",
-            width: old_width + (290 / 2)
-        });
-        next_fs.show();
-        $(".login").animate({
-            height: "370px"
-        });
-        current_fs.animate({
-            opacity: 0
-        }, {
-                step: function (now, mx) {
-                    left = (now * (-10)) + "%";
-                    opacity = 1 - now;
-                    current_fs.css({
-                        'transform': 'scale(' + scale + ')'
-                    });
-                    next_fs.css({
-                        'left': left,
-                        'opacity': opacity
-                    });
-                    next_fs.css({
-                        'margin-top': '10px',
-                        'margin-left': '10px'
-                    });
-                },
-                duration: 200,
-                complete: function () {
-                    current_fs.hide();
-                    animating = false;
-                },
-                easing: 'easeInOutBack'
-            });
+    if (!Math.round10) {
+        Math.round10 = function (value, exp) {
+            return decimalAdjust('round', value, exp);
+        };
     }
-    $('.previous').click(function () {
-        if (animating) return false;
-        animating = true;
-        current_fs = $(this).parent();
-        previous_fs = $(this).parent().prev();
-        $('.progressbar .bar').animate({
-            width: "1%"
-        });
-        previous_fs.show();
-        $(".login").animate({
-            height: "300px"
-        });
-        $('#error_msg').text('');
-        current_fs.animate({
-            opacity: 0
-        }, {
-                step: function (now, mx) {
-                    scale = 0.8 + (1 - now) * 0.2;
-                    left = ((1 - now) * 20) + "%";
-                    opacity = 1 - now;
-                    current_fs.css({
-                        'left': left
-                    });
-                    previous_fs.css({
-                        'transform': 'scale(' + scale + ')',
-                        'opacity': opacity
-                    });
-                },
-                duration: 200,
-                complete: function () {
-                    current_fs.hide();
-                    animating = false;
-                },
-                easing: 'easeInOutBack'
-            });
-    });
-    checkAuthentication()
-    function checkAuthentication() {
-        var form = $("#msform").get(0);
-        $(".submit").on('click', (function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: "/actions/checkAuth.php",
-                type: "POST",
-                data: new FormData(form),
-                contentType: false,
-                cache: true,
-                dataType: "JSON",
-                processData: false,
-                success: function (data) {
-                    if (data.action == "SHOW_ERROR") {
-                        $(".login").animate({
-                            height: "410px"
-                        });
-                        $('#password').css({
-                            'border-color': '#dd4b39'
-                        });
-                        $('#password').focus();
-                        $('#msg').css({
-                            'color': '#dd4b39',
-                            'text-align': 'left'
-                        });
-                        $('#msg').text(data.msg);
-                    } else if (data.action == "SHOW_SUCCESS") {
-                        if (ref != null) {
-                            window.location.href = ref;
-                        }
-                        else if (data.level == 1) {
-                            window.location.href = "/man/";
-                        } else if (data.level == 2) {
-                            window.location.href = "/csh/";
-                        } else if (data.level == 3) {
-                            window.location.href = "/trn/";
-                        } else if (data.level == 4) {
-                            window.location.href = "/cli/";
-                        }
-                    }
-                },
-                error: function () {
-                    log("Errors occured: In authentication.");
-                    log("window.location.href ='" + ref + "'");
-                }
-            });
-        }));
-    }
-    function checkEmail(email, callback) {
-        $.ajax({
-            url: "/actions/checkEmail.php",
-            type: "POST",
-            dataType: "JSON",
-            data: 'user=' + email,
-            success: function (data) {
-                if (data.action == "SHOW_ERROR") {
-                    $('.login').animate({
-                        height: "330px"
-                    });
-                    $('#email').css({
-                        'border-color': '#dd4b39'
-                    });
-                    $('#email').focus();
-                    $('#error_msg').text(data.error_msg);
-                    var flag = 0;
-                } else if (data.action == "SHOW_SUCCESS") {
-                    $('#img').html(data.image);
-                    $('#userName').text(data.fName + " " + data.lName);
-                    $('#userEmail').text(data.email);
-                    var flag = 1;
-                }
-                callback(flag);
-            },
-            error: function () { log("Error occured: In checking email." + email) }
-        });
-    }
-}*/
+})();
 
 ReactDOM.render(<App />, document.getElementById('root'));

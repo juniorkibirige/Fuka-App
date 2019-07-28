@@ -1,5 +1,4 @@
 body {
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -28,7 +27,36 @@ code {
 }
 .fieldset2 {
   text-align: center;
+  display: transparent;
+  position: relative;
+}
+.fieldset3 {
+  text-align: center;
+  display: transparent;
+  position: relative;
 }
 .fieldset1 {
   text-align: center;
+  display: block;
+  position: relative;
+}
+.error-msg {
+  color: red;
+  font-size: 12px;
+}
+.inactive {
+  display: none!important;
+}
+.central {
+  text-align: center;
+}
+.back {
+  float: left;
+  position: relative;
+  cursor: pointer;
+  background-color: darkgoldenrod;
+  padding: 5px;
+}
+.back:hover{
+  background-color: coral;
 }
