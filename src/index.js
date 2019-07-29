@@ -81,7 +81,8 @@ class Body extends Component {
         let token_unencrypted = ''
         let token = ''
         let nits = ''
-        const unitString = this.state.units * 100
+        const unitString = Math.floor10(this.state.units * 100)
+        console.log(unitString)
         const uSLen = String(unitString).length
         if(uSLen === 1) {
             nits = nits.concat("0000", unitString)
@@ -92,11 +93,12 @@ class Body extends Component {
             nits = nits.concat("00", unitString)
         } else if (uSLen === 4) {
             nits = nits.concat("0", unitString)
+        } else {
+            nits = nits.concat(unitString)
         }
         token_unencrypted = token_unencrypted.concat(this.state.deviceId, nits, this.getKey())
         this.splitValue(token_unencrypted, 4)
-        token = token.concat(this.s5,this.s3,this.s6,this.s4)
-        console.log(token)
+        token = token.concat(this.s5,this.s4,this.s3,this.s6)
         this.setState({ token: token })
         this.setState({ btn_checkout: !this.state.btn_checkout })
         this.submitHandler()
@@ -258,6 +260,12 @@ const crypt =  {
             return decimalAdjust('round', value, exp);
         };
     }
+
+    if (!Math.floor10) {
+        Math.floor10 = function(value, exp) {
+          return decimalAdjust('floor', value, exp);
+        };
+      }
 })();
 
 ReactDOM.render(<App />, document.getElementById('root'));
