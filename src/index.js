@@ -1,9 +1,45 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import axios from 'axios';
+const dotenv = require('dotenv');
 
+dotenv.config();
+
+const credentials = {
+    apiKey: "720e244cae1262b1c2827b439f1ffcd541a27d72fd3a28b8c04d7bc4a324e4ee",
+    username: "sandbox"
+}
+
+const sendSMS = (to, message) => {
+
+    axios.post('https://api.sandbox.africastalking.com/version1/messaging',
+        {
+            username: credentials.username,
+            to: to,
+            message: message,
+            enqueue: 1
+        }, {
+        headers: {
+            'apiKey': credentials.apiKey,
+            'Content-Type': 'application/json'
+        }
+    }
+    ).then(response => {
+        console.log(response)
+    }).catch(error => {
+        console.log(error);
+    })
+    // sms.send({ to, message, enque: true })
+    //     .then(response => {
+    //         console.log(response)
+    //     }).catch(error => {
+    //         console.log(error);
+    //     })
+}
 
 function Header(props) {
+    sendSMS("+256705568794", "Test")
     return (
         <div className="nav">{props.AppName}</div>
     );
@@ -23,7 +59,7 @@ class Body extends Component {
             units: '',
             p_unt: 3516,
             token: 'Is being generated ...',
-            btn_checkout: true, 
+            btn_checkout: true,
         };
 
         this.updateInput = this.updateInput.bind(this)
@@ -74,7 +110,7 @@ class Body extends Component {
     }
 
     genToken = () => {
-        if(this.state.amount === ""){
+        if (this.state.amount === "") {
             this.setState({ error_msg: 'Amount field is empty!' })
             return
         }
@@ -84,12 +120,12 @@ class Body extends Component {
         const unitString = Math.floor10(this.state.units * 100)
         console.log(unitString)
         const uSLen = String(unitString).length
-        if(uSLen === 1) {
+        if (uSLen === 1) {
             nits = nits.concat("0000", unitString)
         }
-        else if(uSLen === 2 ) {
+        else if (uSLen === 2) {
             nits = nits.concat("000", unitString)
-        } else if(uSLen === 3) {
+        } else if (uSLen === 3) {
             nits = nits.concat("00", unitString)
         } else if (uSLen === 4) {
             nits = nits.concat("0", unitString)
@@ -98,7 +134,7 @@ class Body extends Component {
         }
         token_unencrypted = token_unencrypted.concat(this.state.deviceId, nits, this.getKey())
         this.splitValue(token_unencrypted, 4)
-        token = token.concat(this.s5,this.s4,this.s3,this.s6)
+        token = token.concat(this.s5, this.s4, this.s3, this.s6)
         this.setState({ token: token })
         this.setState({ btn_checkout: !this.state.btn_checkout })
         this.submitHandler()
@@ -109,9 +145,9 @@ class Body extends Component {
     s6 = ''
     splitValue = (value, index) => {
         this.s3 = value.substring(0, index)
-        this.s4 = value.substring(index, index+index)
-        this.s5 = value.substring(index+index, index+index+index)
-        this.s6 = value.substring(index+index+index)
+        this.s4 = value.substring(index, index + index)
+        this.s5 = value.substring(index + index, index + index + index)
+        this.s6 = value.substring(index + index + index)
     }
 
     validate = () => {
@@ -143,7 +179,7 @@ class Body extends Component {
     getKey = () => {
         let key = ''
         let count = 5
-        while (count !== 0){
+        while (count !== 0) {
             key = key.concat(crypt[this.getRandomIntInclusive(0, 13)])
             count -= 1
         }
@@ -164,7 +200,7 @@ class Body extends Component {
         if (this.state.fieldset3) {
             fieldset3.push('inactive')
         }
-        if(!this.state.btn_checkout){
+        if (!this.state.btn_checkout) {
             btn_value = "Get token"
         }
         return (
@@ -187,7 +223,7 @@ class Body extends Component {
                         <p><input type="text" className="central" placeholder="Meter Number" readOnly="readonly" value={this.state.m_num} /></p>
                         <p lang="en">Enter amount of money to pay below:</p>
                         <p lang="ug">Yingiza omuwendo gwa Ssente zo yagala okusasula mu kabokisi wamanga:</p>
-                        <p><input type="text" name="amount" id="amount" placeholder="Amount to pay" onChange={this.updateInput} value={this.state.amount} required/></p>
+                        <p><input type="text" name="amount" id="amount" placeholder="Amount to pay" onChange={this.updateInput} value={this.state.amount} required /></p>
                         <p><span className="error-msg" id="error_msg">{this.state.error_msg}</span></p>
                         <p>Number of Units:</p>
                         <p>Omuwendo gwa Uniti zosobola okufuna mu Ssente zzo waggulu:</p>
@@ -225,13 +261,13 @@ const meterNum = {
     15404656787896: "DAC324",
 }
 
-const crypt =  {
+const crypt = {
     0: "A", 1: "B", 2: "C", 3: "D",
     4: 0, 5: 1, 6: 2, 7: 3, 8: 4,
     9: 5, 10: 6, 11: 7, 12: 8, 13: 9,
 };
 
-(function (){
+(function () {
     /**
      * Decimal adjustment of a number.
      *
@@ -262,10 +298,10 @@ const crypt =  {
     }
 
     if (!Math.floor10) {
-        Math.floor10 = function(value, exp) {
-          return decimalAdjust('floor', value, exp);
+        Math.floor10 = function (value, exp) {
+            return decimalAdjust('floor', value, exp);
         };
-      }
+    }
 })();
 
 ReactDOM.render(<App />, document.getElementById('root'));

@@ -3,6 +3,9 @@
   "version": "1.1.0",
   "private": true,
   "dependencies": {
+    "africastalking": "^0.5.2",
+    "axios": "^0.20.0",
+    "dotenv": "^8.2.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-native": "^0.60.4",
@@ -11,7 +14,7 @@
     "react-scripts": "3.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "HTTPS=true SSL_CRT_FILE=ssl/local.crt SSL_KEY_FILE=ssl/local.key react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
