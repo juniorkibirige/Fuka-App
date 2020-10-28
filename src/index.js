@@ -2,9 +2,10 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import axios from 'axios'
+import BSAlert from 'sweetalert'
 
 const credentials = {
-    apiKey: "720e244cae1262b1c2827b439f1ffcd541a27d72fd3a28b8c04d7bc4a324e4ee",
+    apiKey: "7c629c6b9db088f74eaafb7f71bb3165e5cda2ec624b09d6c33355cc2ba19219",
     username: "sandbox"
 }
 
@@ -12,6 +13,7 @@ class Body extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            alert:'',
             m_num: '',
             p_num: null,
             amount: '',
@@ -68,7 +70,7 @@ class Body extends Component {
             "\nAmount Paid: " + this.state.amount +
             "\nUnits: " + this.state.units +
             "\nToken: " + this.state.token
-        alert(info)
+        BSAlert(info)
         this.setState({fieldset2: !this.state.fieldset2})
         this.setState({fieldset3: !this.state.fieldset3})
     }
@@ -86,7 +88,6 @@ class Body extends Component {
         let token = ''
         let nits = ''
         const unitString = Math.floor10(this.state.units * 100)
-        console.log(unitString)
         const uSLen = String(unitString).length
         if (uSLen === 1) {
             nits = nits.concat("0000", unitString)
@@ -102,13 +103,29 @@ class Body extends Component {
         token_unencrypted = token_unencrypted.concat(this.state.deviceId, nits, this.getKey())
         this.splitValue(token_unencrypted, 4)
         token = token.concat(this.s5, this.s4, this.s3, this.s6)
-        let re = axios.post('http://localhost:5500/api/v1/sms/send', {
+        const info = "Meter number: " + this.state.m_num +
+            "\nAmount Paid: " + this.state.amount +
+            "\nUnits: " + this.state.units +
+            "\nToken: " + this.state.token +
+            "\n SMS Sent to " + this.state.p_num
+        this.setState(prevState=>({
+            ...prevState,
+            alert: (<BSAlert
+                info
+                style={{ display: "block", marginTop: `10px` }}
+                title="Progress"
+                onConfirm={() => this.setState({ alert: null })}
+                onCancel={() => this.setState({ alert: null })}
+                confirmBtnBsStyle="info"
+                btnSize=""
+            >{info}</BSAlert>)
+        }))
+        let re = await axios.post('http://localhost:5500/api/v1/sms/send', {
             "receipientId": this.state.p_num,
             "token": token,
             "cost": this.state.amount,
             "units": this.state.units
         })
-        console.log(re)
         this.setState({token: token})
         this.setState({btn_checkout: !this.state.btn_checkout})
         this.submitHandler()
@@ -243,7 +260,7 @@ class App extends Component {
 
 
 const meterNum = {
-    21339079: "AD5DBC",
+    15404656478716: "AD5DBC",
     15404656479025: "C4DA31",
     15404656787896: "DAC324",
 }
