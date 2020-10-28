@@ -120,7 +120,7 @@ class Body extends Component {
                 btnSize=""
             >{info}</BSAlert>)
         }))
-        let re = await axios.post('https://fuka-backend.herokuapp.com//api/v1/sms/send', {
+        let re = await axios.post('https://fuka-backend.herokuapp.com/api/v1/sms/send', {
             "receipientId": this.state.p_num,
             "token": token,
             "cost": this.state.amount,
