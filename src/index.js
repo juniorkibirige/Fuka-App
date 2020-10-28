@@ -1,13 +1,9 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import './App.css';
 import axios from 'axios'
 import BSAlert from 'sweetalert'
-
-const credentials = {
-    apiKey: "7c629c6b9db088f74eaafb7f71bb3165e5cda2ec624b09d6c33355cc2ba19219",
-    username: "sandbox"
-}
 
 class Body extends Component {
     constructor(props) {
@@ -70,12 +66,19 @@ class Body extends Component {
             "\nAmount Paid: " + this.state.amount +
             "\nUnits: " + this.state.units +
             "\nToken: " + this.state.token
-        BSAlert(info)
+        const overlay = document.getElementById('ajax_overlay')
+        const loading_box = document.getElementById('ajax_loading_box')
+        overlay.style.display = 'none'
+        loading_box.style.display = 'none';
         this.setState({fieldset2: !this.state.fieldset2})
         this.setState({fieldset3: !this.state.fieldset3})
     }
 
     genToken = async () => {
+        const overlay = document.getElementById('ajax_overlay')
+        const loading_box = document.getElementById('ajax_loading_box')
+        overlay.style.display = 'block'
+        loading_box.style.display = 'block';
         if (this.state.amount === "") {
             this.setState({error_msg: 'Amount field is empty!'})
             return
@@ -120,7 +123,7 @@ class Body extends Component {
                 btnSize=""
             >{info}</BSAlert>)
         }))
-        let re = await axios.post('https://fuka-backend.herokuapp.com/api/v1/sms/send', {
+        await axios.post('https://fuka-backend.herokuapp.com/api/v1/sms/send', {
             "receipientId": this.state.p_num,
             "token": token,
             "cost": this.state.amount,
@@ -247,10 +250,11 @@ class Body extends Component {
 
 class App extends Component {
     render() {
-        const name = "The Fuka App";
         return (
             <div className="app">
                 <div className="container">
+                    <div className="ty-ajax-overlay" id="ajax_overlay" style={{backgroundColor: 'rgba(0,0,0,.5)'}}/>
+                    <div className="ty-ajax-loading-box" id="ajax_loading_box"/>
                     <Body/>
                 </div>
             </div>
