@@ -1,48 +1,11 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import axios from 'axios';
-const dotenv = require('dotenv');
-
-dotenv.config();
+import axios from 'axios'
 
 const credentials = {
     apiKey: "720e244cae1262b1c2827b439f1ffcd541a27d72fd3a28b8c04d7bc4a324e4ee",
     username: "sandbox"
-}
-
-const sendSMS = (to, message) => {
-
-    axios.post('https://api.sandbox.africastalking.com/version1/messaging',
-        {
-            username: credentials.username,
-            to: to,
-            message: message,
-            enqueue: 1
-        }, {
-        headers: {
-            'apiKey': credentials.apiKey,
-            'Content-Type': 'application/json'
-        }
-    }
-    ).then(response => {
-        console.log(response)
-    }).catch(error => {
-        console.log(error);
-    })
-    // sms.send({ to, message, enque: true })
-    //     .then(response => {
-    //         console.log(response)
-    //     }).catch(error => {
-    //         console.log(error);
-    //     })
-}
-
-function Header(props) {
-    sendSMS("+256705568794", "Test")
-    return (
-        <div className="nav">{props.AppName}</div>
-    );
 }
 
 class Body extends Component {
@@ -50,6 +13,7 @@ class Body extends Component {
         super(props);
         this.state = {
             m_num: '',
+            p_num: null,
             amount: '',
             error_msg: '',
             fieldset1: false,
@@ -72,30 +36,30 @@ class Body extends Component {
         return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
     }
 
-    updateInput = ({ target }) => {
+    updateInput = ({target}) => {
         const input = target.value
         if (!isNaN(+input)) {
-            this.setState({ [target.name]: input })
-            this.setState({ error_msg: '' })
+            this.setState({[target.name]: input})
+            this.setState({error_msg: ''})
         } else {
-            this.setState({ [target.name]: input })
+            this.setState({[target.name]: input})
             if (target.name === "m_num")
-                this.setState({ error_msg: 'Invalid Meter Number' })
+                this.setState({error_msg: 'Invalid Meter Number'})
             else if (target.name === "amount")
-                this.setState({ error_msg: 'Invalid amount ' })
+                this.setState({error_msg: 'Invalid amount '})
         }
         if (target.name === "amount") {
             let unt = Math.round10(input / this.state.p_unt, -2)
-            this.setState({ units: unt })
+            this.setState({units: unt})
         }
     }
 
     clickHandler = () => {
         if (this.validate()) {
-            this.setState({ fieldset1: !this.state.fieldset1 })
-            this.setState({ fieldset2: !this.state.fieldset2 })
+            this.setState({fieldset1: !this.state.fieldset1})
+            this.setState({fieldset2: !this.state.fieldset2})
         } else {
-            this.setState({ error_msg: 'Unknown meter number' })
+            this.setState({error_msg: 'Unknown meter number'})
         }
     }
 
@@ -105,13 +69,17 @@ class Body extends Component {
             "\nUnits: " + this.state.units +
             "\nToken: " + this.state.token
         alert(info)
-        this.setState({ fieldset2: !this.state.fieldset2 })
-        this.setState({ fieldset3: !this.state.fieldset3 })
+        this.setState({fieldset2: !this.state.fieldset2})
+        this.setState({fieldset3: !this.state.fieldset3})
     }
 
-    genToken = () => {
+    genToken = async () => {
         if (this.state.amount === "") {
-            this.setState({ error_msg: 'Amount field is empty!' })
+            this.setState({error_msg: 'Amount field is empty!'})
+            return
+        }
+        if(this.state.p_num === null) {
+            this.setState({error_msg: 'Phone number field is empty!!'})
             return
         }
         let token_unencrypted = ''
@@ -122,8 +90,7 @@ class Body extends Component {
         const uSLen = String(unitString).length
         if (uSLen === 1) {
             nits = nits.concat("0000", unitString)
-        }
-        else if (uSLen === 2) {
+        } else if (uSLen === 2) {
             nits = nits.concat("000", unitString)
         } else if (uSLen === 3) {
             nits = nits.concat("00", unitString)
@@ -135,8 +102,15 @@ class Body extends Component {
         token_unencrypted = token_unencrypted.concat(this.state.deviceId, nits, this.getKey())
         this.splitValue(token_unencrypted, 4)
         token = token.concat(this.s5, this.s4, this.s3, this.s6)
-        this.setState({ token: token })
-        this.setState({ btn_checkout: !this.state.btn_checkout })
+        let re = axios.post('http://localhost:5500/api/v1/sms/send', {
+            "receipientId": this.state.p_num,
+            "token": token,
+            "cost": this.state.amount,
+            "units": this.state.units
+        })
+        console.log(re)
+        this.setState({token: token})
+        this.setState({btn_checkout: !this.state.btn_checkout})
         this.submitHandler()
     }
     s3 = ''
@@ -153,28 +127,28 @@ class Body extends Component {
     validate = () => {
         let meter = this.state.m_num
         if (meterNum[meter] !== undefined) {
-            this.setState({ deviceId: (meterNum[meter]) })
+            this.setState({deviceId: (meterNum[meter])})
             return true
         }
         return false
     }
     Back = () => {
-        this.setState({ fieldset1: !this.state.fieldset1 })
-        this.setState({ fieldset2: !this.state.fieldset2 })
-        this.setState({ amount: '' })
-        this.setState({ units: '' })
-        this.setState({ token: 'Is being generated ...' })
-        this.setState({ error_msg: '' })
+        this.setState({fieldset1: !this.state.fieldset1})
+        this.setState({fieldset2: !this.state.fieldset2})
+        this.setState({amount: ''})
+        this.setState({units: ''})
+        this.setState({token: 'Is being generated ...'})
+        this.setState({error_msg: ''})
     }
     root = () => {
-        this.setState({ fieldset1: false })
-        this.setState({ fieldset2: true })
-        this.setState({ fieldset3: true })
-        this.setState({ amount: '' })
-        this.setState({ units: '' })
-        this.setState({ token: 'Is being generated ...' })
-        this.setState({ error_msg: '' })
-        this.setState({ m_num: '' })
+        this.setState({fieldset1: false})
+        this.setState({fieldset2: true})
+        this.setState({fieldset3: true})
+        this.setState({amount: ''})
+        this.setState({units: ''})
+        this.setState({token: 'Is being generated ...'})
+        this.setState({error_msg: ''})
+        this.setState({m_num: ''})
     }
     getKey = () => {
         let key = ''
@@ -185,6 +159,7 @@ class Body extends Component {
         }
         return key
     }
+
     render() {
         const desc = "Next"
         let btn_value = "Pay & Checkout"
@@ -210,7 +185,8 @@ class Body extends Component {
                         <h4>Welcome to the Electronic Water Management System.</h4>
                         <p lang="en">Please enter your meter number below:</p>
                         <p lang="ug">Yingiza ennamba ya meter yo mu kabokisi wamanga:</p>
-                        <input m_num="m_num" type="text" placeholder="Meter Number" name="m_num" id="m_num" value={this.state.m_num} onChange={this.updateInput} required="yes" />
+                        <input m_num="m_num" type="text" placeholder="Meter Number" name="m_num" id="m_num"
+                               value={this.state.m_num} onChange={this.updateInput} required="yes"/>
                         <p><span className="error-msg" id="error_msg">{this.state.error_msg}</span></p>
                         <button
                             name="next"
@@ -220,19 +196,31 @@ class Body extends Component {
                     </fieldset>
                     <fieldset className={fieldset2.join(' ')}>
                         <button className="back" onClick={this.Back}>Back</button>
-                        <p><input type="text" className="central" placeholder="Meter Number" readOnly="readonly" value={this.state.m_num} /></p>
+                        <p><input type="text" className="central" placeholder="Meter Number" readOnly="readonly"
+                                  value={this.state.m_num}/></p>
                         <p lang="en">Enter amount of money to pay below:</p>
                         <p lang="ug">Yingiza omuwendo gwa Ssente zo yagala okusasula mu kabokisi wamanga:</p>
-                        <p><input type="text" name="amount" id="amount" placeholder="Amount to pay" onChange={this.updateInput} value={this.state.amount} required /></p>
+                        <p><input type="text" name="amount" id="amount" placeholder="Amount to pay"
+                                  onChange={this.updateInput} value={this.state.amount} required/></p>
                         <p><span className="error-msg" id="error_msg">{this.state.error_msg}</span></p>
+                        <p>
+                            <select style={{display: 'inline-block'}} type="text" name='country_code' id={`cc`}>
+                                <option value="+256">UG +256</option>
+                            </select>
+                            <input type="text" name='p_num' value={this.state.p_num ?? ""} onChange={this.updateInput}/>
+                        </p>
                         <p>Number of Units:</p>
                         <p>Omuwendo gwa Uniti zosobola okufuna mu Ssente zzo waggulu:</p>
-                        <p><input type="text" readOnly="readonly" name="Units" placeholder="units" value={this.state.units} /> units @ {this.state.p_unt}/=</p>
-                        <input type="button" value={btn_value} onClick={this.genToken} />
+                        <p><input type="text" readOnly="readonly" name="Units" placeholder="units"
+                                  value={this.state.units}/> units @ {this.state.p_unt}/=</p>
+                        <input type="button" value={btn_value} onClick={this.genToken}/>
                     </fieldset>
                     <fieldset className={fieldset3.join(' ')}>
-                        <div className="message">Your token is {this.state.token}</div><br></br>
-                        <a href="/"><button type="button">Done</button></a>
+                        <div className="message">Your token is {this.state.token}</div>
+                        <br></br>
+                        <a href="/">
+                            <button type="button">Done</button>
+                        </a>
                     </fieldset>
                 </form>
             </div>
@@ -246,8 +234,7 @@ class App extends Component {
         return (
             <div className="app">
                 <div className="container">
-                    <Header AppName={name} />
-                    <Body />
+                    <Body/>
                 </div>
             </div>
         );
@@ -304,4 +291,4 @@ const crypt = {
     }
 })();
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<App/>, document.getElementById('root'));
